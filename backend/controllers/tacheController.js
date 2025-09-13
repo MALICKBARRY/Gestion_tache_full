@@ -8,25 +8,21 @@ const taskSchema = require('../validations/tachesValidation');
 exports.createTache = async (req, res, next) => {
   try {
     const { error } = taskSchema.validate(req.body, { allowUnknown: true });
-if (error) return res.status(400).json({ message: error.details[0].message });
-
-    const userId = req.user.id;
-
-    let tacheData = { ...req.body, creePar: userId };
-
-    // Exemple : assigner automatiquement un membre avec rôle 'chef'
-    if(!tacheData.assigneA){
- const chef = await Member.findOne({ role: 'chef', creePar: userId});
- if(!chef){
-  return res.status(404).json({message: "Aucun chef trouvé pour cet utilisateur"});
- }
-tacheData.assigneA = chef._id;
-    // if (chef) {
-      
-    // }
-   
+    if (error) {
+      return res.status(400).json({ message: error.details[0].message });
     }
 
+    const userId = req.user.id;
+    let tacheData = { ...req.body, creePar: userId };
+
+    // Assigner automatiquement un chef si disponible
+    if(!tacheData.assigneA){
+      const chef = await Member.findOne({ role: 'chef', creePar: userId});
+      if(chef){
+        tacheData.assigneA = chef._id;
+      }
+    }
+    
     let tache = await Tache.create(tacheData);
     tache = await Tache.findById(tache._id)
       .populate('assigneA', 'nom email')
@@ -43,14 +39,15 @@ tacheData.assigneA = chef._id;
 // Obtenir toutes les tâches (avec pagination et filtre)
 exports.getTache = async (req, res, next) => {
   try {
-    const { page = 1, limit = 5, priorite, status } = req.query;
+    const { page = 1, limit = 100, priorite, status } = req.query;
     const filter = {};
     if (priorite) filter.priorite = priorite;
     if (status) filter.status = status;
-
+    
     const tache = await Tache.find(filter)
       .populate('assigneA', 'nom email')
       .populate('creePar', 'nom email role')
+      .sort({ createdAt: -1 })
       .limit(limit * 1)
       .skip((page - 1) * limit);
 

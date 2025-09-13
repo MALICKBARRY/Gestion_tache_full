@@ -19,4 +19,4 @@ const taskSchema = new mongoose.Schema({
   dateEch: { type: Date }
 }, { timestamps: true });
 
-module.exports = mongoose.model('Task', taskSchema);
+module.exports = mongoose.model('Tache', taskSchema);

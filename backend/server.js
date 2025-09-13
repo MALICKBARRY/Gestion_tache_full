@@ -15,10 +15,16 @@ app.use(express.json());
 app.use(helmet());
 app.use(cors());
 
+// Route de test
+app.get('/api/test', (req, res) => {
+  res.json({ message: 'API fonctionne correctement!' });
+});
+
 // Routes
 app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/taches', require('./routes/tacheRoutes'));
 app.use('/api/members', require('./routes/memberRoutes'));
+app.use('/api/users', require('./routes/userRoutes'));
 
 // Middleware gestion d'erreurs
 app.use(errorHandler);
